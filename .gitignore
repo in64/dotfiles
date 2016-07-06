@@ -1,0 +1,13 @@
+# 本地/私有配置文件
+.gitconfig.local
+
+# age 密钥文件
+key.txt
+*.age
+
+# 备份文件
+*.bak
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db

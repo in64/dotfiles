@@ -1,0 +1,22 @@
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor-specific files
+*.swp
+*.swo
+*~
+.vscode/
+
+# Dependency directories
+node_modules/
+.venv/
+
+
+# 本地配置文件
+*.local
