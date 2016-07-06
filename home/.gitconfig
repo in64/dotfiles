@@ -1,0 +1,40 @@
+[core]
+    editor = vim
+    excludesfile = ~/.gitignore_global
+    quotepath = false
+    pager = delta
+[color]
+    ui = true
+[alias]
+    lg = log --color --graph --pretty
+    df = difftool
+    ci = commit
+    co = checkout
+    st = status
+    br = branch
+    last = log -1 HEAD
+    ls = ls-files
+[push]
+    default = simple
+[pull]
+    rebase = true
+[fetch]
+    prune = true
+[merge]
+    tool = vimdiff
+    conflictStyle = zdiff3
+[diff]
+    tool = vimdiff
+[interactive]
+    diffFilter = delta --color-only
+[difftool]
+    prompt = false
+[mergetool]
+    prompt = false
+[include]
+    path = ~/.gitconfig.local
+[delta]
+    navigate = true
+    side-by-side = true
+    line-numbers = true
+    syntax-theme = "OneHalfDark"
