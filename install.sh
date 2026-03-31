@@ -112,7 +112,7 @@ EOF
 
     Linux)
         # --- Linux 安装逻辑 ---
-        info "🐀 检测到 Linux, 运行特定于 Linux 的安装脚本..."
+        info "🐧 检测到 Linux, 运行特定于 Linux 的安装脚本..."
         mkdir -p "$HOME/.local/bin"
 
         # 检测包管理器
@@ -121,22 +121,49 @@ EOF
 
             APT_PACKAGES=("build-essential" "curl" "file" "git" "jq" "vim" "tmux" "tig" "ripgrep" "zoxide" "universal-ctags")
 
+            # 给 github codespace 打个补丁
+            if [ "${CODESPACES:-}" = "true" ] && [ -f /etc/apt/sources.list.d/yarn.list ]; then
+                sudo sed -i 's@^@# @g' /etc/apt/sources.list.d/yarn.list
+            fi
+
             sudo apt-get update -y
             info "🔧 正在安装依赖: ${APT_PACKAGES[*]}"
             sudo apt-get install -y --no-install-recommends "${APT_PACKAGES[@]}"
+
+            # Debian/Ubuntu 使用 glibc 版本的二进制
+            info "☁️ 正在从 GitHub Releases 下载并安装最新的二进制文件..."
+            install_from_github "rage" "str4d/rage" "v[0-9.]*-$(get_arch_name rage)-linux.tar.gz$" --strip-components=1 --wildcards "*/rage" "*/rage-keygen"
+            install_from_github "delta" "dandavison/delta" "$(get_arch_name)-unknown-linux-gnu.tar.gz$" --strip-components=1 --wildcards '*/delta'
+            install_from_github "eza" "eza-community/eza" "eza.*$(get_arch_name)-unknown-linux-gnu.tar.gz$" "./eza"
+            install_from_github "bat" "sharkdp/bat" "$(get_arch_name)-unknown-linux-musl.tar.gz$" --strip-components=1 --wildcards "*/bat"
+            install_from_github "fzf" "junegunn/fzf" "linux_$(get_arch_name fzf).tar.gz$" "fzf"
+            install_from_github "fastfetch" "fastfetch-cli/fastfetch" "fastfetch-linux-$(get_arch_name fastfetch).tar.gz$" --strip-components=3 "fastfetch-linux-$(get_arch_name fastfetch)/usr/bin/fastfetch"
+
+        elif command -v dnf &>/dev/null; then
+            # 使用 dnf (RHEL/Rocky/Alma 8+)
+            info "📦 使用 dnf 作为包管理器 (RHEL/Rocky/Alma)."
+
+            # 安装 EPEL 仓库
+            info "📦 安装 EPEL 仓库..."
+            sudo dnf install -y epel-release
+
+            info "🔧 正在安装依赖..."
+            sudo dnf groupinstall -y "Development Tools"
+            sudo dnf install -y curl file git jq vim tmux tig ripgrep ctags rsync --allowerasing
+
+            # RH 系列可能 glibc 版本较低, 使用 musl 版本的二进制更兼容
+            info "☁️ 正在从 GitHub Releases 下载并安装最新的二进制文件..."
+            install_from_github "rage" "str4d/rage" "v[0-9.]*-$(get_arch_name rage)-linux.tar.gz$" --strip-components=1 --wildcards "*/rage" "*/rage-keygen"
+            install_from_github "delta" "dandavison/delta" "$(get_arch_name)-unknown-linux-musl.tar.gz$" --strip-components=1 --wildcards '*/delta'
+            install_from_github "eza" "eza-community/eza" "eza.*$(get_arch_name)-unknown-linux-musl.tar.gz$" "./eza"
+            install_from_github "zoxide" "ajeetdsouza/zoxide" "$(get_arch_name)-unknown-linux-musl.tar.gz$" "zoxide"
+            install_from_github "bat" "sharkdp/bat" "$(get_arch_name)-unknown-linux-musl.tar.gz$" --strip-components=1 --wildcards "*/bat"
+            install_from_github "fzf" "junegunn/fzf" "linux_$(get_arch_name fzf).tar.gz$" "fzf"
+            install_from_github "fastfetch" "fastfetch-cli/fastfetch" "fastfetch-linux-$(get_arch_name fastfetch).tar.gz$" --strip-components=3 "fastfetch-linux-$(get_arch_name fastfetch)/usr/bin/fastfetch"
+
         else
             error "不支持的 Linux 包管理器, 请手动安装软件包."
         fi
-
-        # 使用新函数安装二进制工具
-        info "☁️ 正在从 GitHub Releases 下载并安装最新的二进制文件..."
-        install_from_github "rage" "str4d/rage" "v[0-9.]*-$(get_arch_name rage)-linux.tar.gz$" --strip-components=1 --wildcards "*/rage" "*/rage-keygen"
-        install_from_github "delta" "dandavison/delta" "$(get_arch_name)-unknown-linux-gnu.tar.gz$" --strip-components=1 --wildcards '*/delta'
-        install_from_github "eza" "eza-community/eza" "eza.*$(get_arch_name)-unknown-linux-gnu.tar.gz$" "./eza"
-        install_from_github "zoxide" "ajeetdsouza/zoxide" "$(get_arch_name)-unknown-linux-musl.tar.gz$" "zoxide"
-        install_from_github "bat" "sharkdp/bat" "$(get_arch_name)-unknown-linux-musl.tar.gz$" --strip-components=1 --wildcards "*/bat"
-        install_from_github "fzf" "junegunn/fzf" "linux_$(get_arch_name fzf).tar.gz$" "fzf"
-        install_from_github "fastfetch" "fastfetch-cli/fastfetch" "fastfetch-linux-$(get_arch_name fastfetch).tar.gz$" --strip-components=3 "fastfetch-linux-$(get_arch_name fastfetch)/usr/bin/fastfetch"
 
         info "✅ Linux 特定软件包安装完成."
         ;;
