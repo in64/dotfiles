@@ -121,6 +121,11 @@ EOF
 
             APT_PACKAGES=("build-essential" "curl" "file" "git" "jq" "vim" "tmux" "tig" "ripgrep" "zoxide" "universal-ctags")
 
+            # 给 github codespace 打个补丁
+            if [ "$CODESPACES" = "true" ] && [ -f /etc/apt/sources.list.d/yarn.list ]; then
+                sudo sed -i 's@^@# @g' /etc/apt/sources.list.d/yarn.list 
+            fi
+
             sudo apt-get update -y
             info "🔧 正在安装依赖: ${APT_PACKAGES[*]}"
             sudo apt-get install -y --no-install-recommends "${APT_PACKAGES[@]}"
