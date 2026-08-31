@@ -14,6 +14,7 @@ warn() { printf " [33m➜  %s[0m\n" "$*"; }
 error() { printf " [31m✖  %s[0m\n" "$*" >&2; exit 1; }
 
 # 检查是否在中国大陆,并设置全局代理前缀
+is_china=0
 if [[ -z "$PREFIX_PROXY" ]]; then
     is_china=$(curl -fsSL -m 5 https://ip.seiya.dev/country 2>/dev/null | grep -Eq '^(CN)$' && echo 1 || echo 0)
 
@@ -238,8 +239,8 @@ for dirname in "${dirs_to_sync[@]}"; do
 done
 
 
-# 4. 如果在中国,为 Git 设置代理,加速 clone
-if [[ "$is_china" -eq 1 ]]; then
+# 4. 有下载前缀时,为 Git 设置代理,加速 clone
+if [[ -n "$PREFIX_PROXY" ]]; then
     info "🔧 正在为 Git 配置代理..."
     git config --global url."${PREFIX_PROXY}github.com/".insteadOf "https://github.com/"
 fi
