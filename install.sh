@@ -5,7 +5,7 @@ set -euo pipefail
 # 获取脚本所在目录
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 HOME=${HOME:=$(eval echo ~)}
-PREFIX_PROXY=""
+PREFIX_PROXY="${PREFIX_PROXY:-}"
 
 # 通用辅助函数
 # 日志函数
@@ -14,13 +14,15 @@ warn() { printf " [33m➜  %s[0m\n" "$*"; }
 error() { printf " [31m✖  %s[0m\n" "$*" >&2; exit 1; }
 
 # 检查是否在中国大陆,并设置全局代理前缀
-is_china=$(curl -fsSL -m 5 https://ip.seiya.dev/country 2>/dev/null | grep -Eq '^(CN)$' && echo 1 || echo 0)
+if [[ -z "$PREFIX_PROXY" ]]; then
+    is_china=$(curl -fsSL -m 5 https://ip.seiya.dev/country 2>/dev/null | grep -Eq '^(CN)$' && echo 1 || echo 0)
 
-if [[ "$is_china" -eq 1 ]]; then
-    info "📍 检测到在中国, 将为部分网络请求启用代理和镜像."
-    PREFIX_PROXY="https://spu.seiya.dev/"
-    # 为 Homebrew 设置镜像,加速软件包下载
-    export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+    if [[ "$is_china" -eq 1 ]]; then
+        info "📍 检测到在中国, 将为部分网络请求启用代理和镜像."
+        PREFIX_PROXY="https://spu.seiya.dev/"
+        # 为 Homebrew 设置镜像,加速软件包下载
+        export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+    fi
 fi
 
 # 根据工具名和系统架构, 获取对应的架构关键字
